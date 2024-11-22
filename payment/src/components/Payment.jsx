@@ -10,7 +10,6 @@ import {
   FaDollarSign, 
   FaMobileAlt 
 } from "react-icons/fa";
-import axios from 'axios';
 
 function App() {
   const [paymentMethod, setPaymentMethod] = useState("card");
@@ -30,35 +29,15 @@ function App() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handlePaymentSubmit = async (e) => {
+  const handlePaymentSubmit = (e) => {
     e.preventDefault();
-
-    // Fetch additional data from localStorage
-    const additionalData = JSON.parse(localStorage.getItem("registrationData") || "{}");
-
-    // Merge localStorage data with formData
-    const mergedData = { ...formData, ...additionalData };
-
-    try {
-      const response = await axios.post("http://localhost:8082/register", mergedData);
-      alert(`Payment Successful via ${paymentMethod.toUpperCase()}!`);
-      console.log(response.data);
-      if (response.data.success) {
-        // Navigate or perform additional actions
-        window.location.href = "/dashboard"; // Example navigation
-      } else {
-        alert(response.data.message); // Display error message
-      }
-    } catch (error) {
-      console.error("Error during API call:", error);
-      alert("There was an error processing the payment");
-    }
+    alert(`Payment Successful via ${paymentMethod.toUpperCase()}!`);
   };
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row items-center justify-center bg-white">
       {/* Left Section */}
-      <div className="w-full lg:w-1/2 bg-blue-950 p-10 lg:p-36 flex flex-col justify-center items-center">
+      <div className="w-full lg:w-1/2 bg-blue-950 p-10 lg:p-24 flex flex-col justify-center items-center">
         <h1 className="text-3xl lg:text-4xl font-bold text-white text-center">
           Enable <span className="text-red-600">Businesses</span> to Digitalization.
         </h1>
@@ -73,7 +52,7 @@ function App() {
       </div>
 
       {/* Right Section */}
-      <div className="w-full lg:w-1/2 bg-gray-50 p-8 lg:p-11 flex flex-col justify-center" style={{ minHeight: "650px" }}>
+      <div className="w-full lg:w-1/2 bg-gray-50 p-8 lg:p-11 flex flex-col justify-center">
         <h2 className="text-2xl lg:text-3xl font-bold text-blue-950 text-center lg:text-left">
           Payment Information
         </h2>
@@ -94,20 +73,6 @@ function App() {
 
         {/* Payment Form */}
         <form className="mt-8 space-y-6" onSubmit={handlePaymentSubmit}>
-          {/* Name Field */}
-          <div className="flex items-center border rounded-lg px-3 py-2">
-            <FaUser className="text-gray-500 mr-2" />
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handlePaymentChange}
-              placeholder="Your Name"
-              className="w-full outline-none"
-              required
-            />
-          </div>
-
           {paymentMethod === "card" && (
             <>
               <div className="flex items-center border rounded-lg px-3 py-2">
@@ -170,40 +135,41 @@ function App() {
 
           {paymentMethod === "netbanking" && (
             <div className="flex items-center border rounded-lg px-3 py-2">
-              <FaBank className="text-gray-500 mr-2" />
-              <input
-                type="text"
+              <FaLock className="text-gray-500 mr-2" />
+              <select
                 name="bank"
                 value={formData.bank}
                 onChange={handlePaymentChange}
-                placeholder="Bank Name"
                 className="w-full outline-none"
                 required
-              />
+              >
+                <option value="">Select Your Bank</option>
+                <option value="sbi">State Bank of India</option>
+                <option value="hdfc">HDFC Bank</option>
+                <option value="icici">ICICI Bank</option>
+              </select>
             </div>
           )}
 
-          {/* Amount Field (Fixed) */}
+          {/* Fixed Amount */}
           <div className="flex items-center border rounded-lg px-3 py-2">
             <FaDollarSign className="text-gray-500 mr-2" />
             <input
-              type="text"
+              type="number"
               name="amount"
               value={formData.amount}
-              disabled
-              className="w-full outline-none"
+              readOnly
+              className="w-full outline-none text-gray-700"
+              required
             />
           </div>
 
-          {/* Submit Button */}
-          <div className="text-center">
-            <button
-              type="submit"
-              className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300"
-            >
-              Submit Payment
-            </button>
-          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+          >
+            Pay Now
+          </button>
         </form>
       </div>
     </div>

@@ -39,7 +39,7 @@ exports.postRegister = async (req, res) => {
       fatherName,
       City,
       Qualification,
-      PinCode,
+      Pincode,
       Email,
       Password,
       Role
@@ -74,7 +74,7 @@ exports.postRegister = async (req, res) => {
       fatherName,
       City,
       Qualification,
-      PinCode,
+      Pincode,
       Email,
       Password,
       Role

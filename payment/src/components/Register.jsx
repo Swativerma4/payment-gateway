@@ -1,40 +1,51 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const pincodeURL = "https://api.postalpincode.in/pincode/";
 
 function RegistrationPage() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    Phone: '', // Changed from mobileNumber
-    fatherName: '', // Changed from fathersName
-    City: '', // Changed from city
-    Qualification: '', // Added to match backend
-    PinCode: '', // Changed from pinCode
-    Email: '', // Changed from email
-    Password: '', // Changed from password
-    Role: 'User',
+    firstName: "",
+    lastName: "",
+    Phone: "",
+    fatherName: "",
+    City: "",
+    Qualification: "", // Optional field
+    Pincode: "",
+    Email: "",
+    Password: "",
+    Role: "User",
   });
 
-  const [cityFromPincode, setCityFromPincode] = useState('');
-  const [alertQueue, setAlertQueue] = useState([]); 
+  const [cityFromPincode, setCityFromPincode] = useState("");
+  const [alertQueue, setAlertQueue] = useState([]);
+  const [errors, setErrors] = useState({});
+
+  // Debugging - Log formData and cityFromPincode on every render
+  useEffect(() => {
+    console.log("Form Data Updated:", formData);
+    console.log("City from Pincode API:", cityFromPincode);
+  }, [formData, cityFromPincode]);
 
   // Fetch city from pincode
   const fetchCityFromPincode = async (pincode) => {
     try {
       const response = await fetch(`${pincodeURL}${pincode}`);
       const data = await response.json();
-      if (data[0].Status === 'Success') {
+      console.log("API Response:", data); // Log API response
+
+      if (data && data[0] && data[0].Status === "Success" && data[0].PostOffice[0]) {
         const city = data[0].PostOffice[0].Division;
         setCityFromPincode(city);
       } else {
-        setCityFromPincode('');
+        setCityFromPincode("");
+        alert("Unable to fetch city. Please check the pincode.");
       }
     } catch (error) {
-      console.error("Error fetching city from pincode", error);
-      setCityFromPincode('');
+      console.error("Error fetching city from pincode:", error);
+      setCityFromPincode("");
+      alert("There was an error fetching the city. Please try again later.");
     }
   };
 
@@ -47,10 +58,13 @@ function RegistrationPage() {
   };
 
   useEffect(() => {
-    if (formData.PinCode.length === 6) {
-      fetchCityFromPincode(formData.PinCode);
+    if (formData.Pincode.length === 6) {
+      fetchCityFromPincode(formData.Pincode);
     }
-  }, [formData.PinCode]);
+  }, [formData.Pincode]);
+
+  const passwordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
   const isFormValid = () => {
     const {
@@ -62,12 +76,28 @@ function RegistrationPage() {
       Email,
       Password,
       Role,
-      PinCode,
+      Pincode,
     } = formData;
 
-    const isCityValid = City === cityFromPincode;
-    const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const normalizedCityFromAPI = cityFromPincode.trim().toLowerCase();
+    const normalizedCityFromForm = City.trim().toLowerCase();
+
+    const isCityValid = normalizedCityFromForm === normalizedCityFromAPI;
+
+    const passwordValid = passwordRegex.test(Password);
+
+    setErrors({
+      firstName: !firstName,
+      lastName: !lastName,
+      Phone: Phone.length !== 10,
+      fatherName: !fatherName,
+      City: !City || normalizedCityFromForm !== normalizedCityFromAPI,
+      Email: !Email,
+      Password: !passwordValid,
+      Role: !Role,
+      Pincode: Pincode.length !== 6,
+      passwordValid: !passwordValid,
+    });
 
     return (
       firstName &&
@@ -76,9 +106,9 @@ function RegistrationPage() {
       fatherName &&
       City &&
       Email &&
-      passwordRegex.test(Password) &&
+      passwordValid &&
       Role &&
-      PinCode.length === 6 &&
+      Pincode.length === 6 &&
       isCityValid
     );
   };
@@ -88,55 +118,30 @@ function RegistrationPage() {
 
     let errors = [];
 
-    // Check for missing fields
-    if (
-      !formData.firstName ||
-      !formData.lastName ||
-      !formData.Phone ||
-      !formData.fatherName ||
-      !formData.City ||
-      !formData.PinCode ||
-      !formData.Email ||
-      !formData.Password
-    ) {
-      errors.push("Please fill in all required fields.");
-    } else {
-      // Specific field checks
-      if (formData.Phone.length !== 10) {
-        errors.push("Mobile Number must be 10 digits.");
-      }
-
-      if (formData.PinCode.length !== 6) {
-        errors.push("Pincode must be 6 digits.");
-      }
-
-      // City mismatch with pincode
-      if (formData.City !== cityFromPincode) {
-        errors.push('The city does not match the pincode.');
-      }
-
-      // Password validation
-      const passwordRegex =
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-      if (!passwordRegex.test(formData.Password)) {
-        errors.push('Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.');
-      }
+    if (!isFormValid()) {
+      errors.push("Please correct the highlighted errors before proceeding.");
     }
 
-    // If errors, set the alert queue
+    // Check if City matches with Pincode API result
+    const normalizedCityFromAPI = cityFromPincode.trim().toLowerCase();
+    const normalizedCityFromForm = formData.City.trim().toLowerCase();
+    if (normalizedCityFromForm !== normalizedCityFromAPI) {
+      errors.push(`The city does not match the Pincode. The correct city is ${cityFromPincode}.`);
+    }
+
     if (errors.length > 0) {
       setAlertQueue(errors);
     } else {
+      console.log("Registration Data:", formData); // Log form data
       localStorage.setItem("registrationData", JSON.stringify(formData));
-      // Proceed with registration and navigate to payment page
-      navigate('/Payment');
+      navigate("/Payment");
     }
   };
 
   useEffect(() => {
     if (alertQueue.length > 0) {
       alert(alertQueue[0]);
-      setAlertQueue((prevQueue) => prevQueue.slice(1)); // Remove the first alert
+      setAlertQueue((prevQueue) => prevQueue.slice(1));
     }
   }, [alertQueue]);
 
@@ -147,117 +152,42 @@ function RegistrationPage() {
           <div className="w-full max-w-4xl bg-white p-6 text-left py-12 rounded-lg shadow-lg">
             <h2 className="text-3xl font-bold text-blue-900 text-center">Register Here</h2>
             <form className="mt-6 space-y-4" onSubmit={handleRegister}>
-              {/* First Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 py-3">First Name *</label>
-                <input
-                  type="text"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-950"
-                  placeholder="Enter your first name"
-                />
-              </div>
-
-              {/* Last Name */}
-              <div>
-                <label className="py-3 block text-sm font-medium text-gray-700">Last Name *</label>
-                <input
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-950"
-                  placeholder="Enter your last name"
-                />
-              </div>
-
-              {/* Mobile Number */}
-              <div>
-                <label className="py-3 block text-sm font-medium text-gray-700">Mobile Number *</label>
-                <input
-                  type="text"
-                  name="Phone"
-                  value={formData.Phone}
-                  onChange={handleInputChange}
-                  maxLength={10}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-950"
-                  placeholder="Enter your mobile number"
-                />
-              </div>
-
-              {/* Father's Name */}
-              <div>
-                <label className="py-3 block text-sm font-medium text-gray-700">Father's Name *</label>
-                <input
-                  type="text"
-                  name="fatherName"
-                  value={formData.fatherName}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-950"
-                  placeholder="Enter your father's name"
-                />
-              </div>
-
-              {/* City */}
-              <div>
-                <label className="py-3 block text-sm font-medium text-gray-700">City *</label>
-                <input
-                  type="text"
-                  name="City"
-                  value={formData.City}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-950"
-                  placeholder="Enter your city"
-                />
-              </div>
-
-              {/* Pincode */}
-              <div>
-                <label className="py-3 block text-sm font-medium text-gray-700">Pincode *</label>
-                <input
-                  type="text"
-                  name="PinCode"
-                  value={formData.PinCode}
-                  onChange={handleInputChange}
-                  maxLength={6}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-950"
-                  placeholder="Enter your pincode"
-                />
-              </div>
-
-              {/* Email */}
-              <div>
-                <label className="py-3 block text-sm font-medium text-gray-700">Email *</label>
-                <input
-                  type="email"
-                  name="Email"
-                  value={formData.Email}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-950"
-                  placeholder="Enter your email"
-                />
-              </div>
-
-              {/* Password */}
-              <div>
-                <label className="py-3 block text-sm font-medium text-gray-700">Password *</label>
-                <input
-                  type="password"
-                  name="Password"
-                  value={formData.Password}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-950"
-                  placeholder="Enter your password"
-                />
-              </div>
-
-              <div className="mt-4 text-center">
+              {/* Input Fields */}
+              {[
+                { label: "First Name", name: "firstName", type: "text" },
+                { label: "Last Name", name: "lastName", type: "text" },
+                { label: "Mobile Number", name: "Phone", type: "text", maxLength: 10 },
+                { label: "Father's Name", name: "fatherName", type: "text" },
+                { label: "City", name: "City", type: "text" },
+                { label: "Pincode", name: "Pincode", type: "text", maxLength: 6 },
+                { label: "Qualification (Optional)", name: "Qualification", type: "text" }, // Optional field
+                { label: "Email", name: "Email", type: "email" },
+                { label: "Password", name: "Password", type: "password" },
+              ].map((field) => (
+                <div key={field.name}>
+                  <label className="py-3 block text-sm font-medium text-gray-700">
+                    {field.label} {field.name === "Qualification" && "(Optional)"}
+                  </label>
+                  <input
+                    type={field.type}
+                    name={field.name}
+                    value={formData[field.name]}
+                    onChange={handleInputChange}
+                    maxLength={field.maxLength}
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2  ${errors[field.name] ? 'border-red-500 ' : 'border-gray-300'} focus:ring-blue-950`}
+                    placeholder={`Enter your ${field.label.toLowerCase()}`}
+                  />
+                  {/* Show specific error for Password */}
+                  {field.name === "Password" && errors[field.name] && (
+                    <p className="text-red-500 text-sm">Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.</p>
+                  )}
+                </div>
+              ))}
+              {/* Submit Button */}
+              <div className="mt-4">
                 <button
                   type="submit"
-                  className="w-full bg-blue-950 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-950"
-                  disabled={!isFormValid()}
+                  className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
                 >
                   Register
                 </button>

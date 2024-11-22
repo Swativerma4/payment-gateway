@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Lottie from 'lottie-react';
 import { useNavigate } from 'react-router-dom';
-import Amimation from "../assets/Animation5.json"
+import Amimation from "../assets/Animation4.json"
 const Dashboard = () => {
   const [isRegistered, setIsRegistered] = useState(false);
   const navigate = useNavigate();
