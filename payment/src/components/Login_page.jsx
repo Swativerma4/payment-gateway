@@ -1,23 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Lottie from 'lottie-react';
 import animationData from "../assets/Animation2";
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // Make sure you have react-router-dom installed for navigation
 
-const handleRegister = () => {
-  navigate("/Register");  
-};
+
 function App() {
-  const [username, setUsername] = useState('');
+  const [Email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  // Handle form submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!username || !password) {
-      setError('All fields are required. Please fill in both Username and Password.');
+    if (!Email || !password) {
+      setError('All fields are required. Please fill in both Email and Password.');
       return;
     }
+
+    // Clear any previous error
+    setError('');
+
+    try {
+      // Send POST request to the backend
+      const response = await axios.post('http://localhost:8082/login', {
+        email: Email, // Correct field name used here
+        password: password,
+      });
+
+      if (response.data.success) {
+        navigate("/dashboard");
+        localStorage.setItem("user", true);
+      } else {
+        setError(response.data.message); // Show the error message from the backend
+      }
+    } catch (error) {
+      console.error('Error logging in:', error);
+      setError('Something went wrong, please try again.');
+    }
+  };
+
+  const handleRegister = () => {
+    navigate("/Register");  
   };
 
   return (
@@ -51,11 +78,11 @@ function App() {
             </div>
           )}
           <div>
-            <label className="block text-sm text-gray-600 text-left pb-2">Username</label>
+            <label className="block text-sm text-gray-600 text-left pb-2">Email</label>
             <input
               type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={Email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600"
               placeholder="Enter your username"
             />

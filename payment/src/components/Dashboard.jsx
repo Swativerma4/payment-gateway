@@ -1,7 +1,8 @@
 // src/components/Dashboard.js
 import React, { useState, useEffect } from 'react';
+import Lottie from 'lottie-react';
 import { useNavigate } from 'react-router-dom';
-
+import Amimation from "../assets/Animation5.json"
 const Dashboard = () => {
   const [isRegistered, setIsRegistered] = useState(false);
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ const Dashboard = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-6">
+    <div className= "flex flex-col items-center justify-center bg-white py-6">
 
 
     
@@ -28,6 +29,14 @@ const Dashboard = () => {
           >
             Explore Services
           </button>
+        </div>
+        <div className="mt-8 lg:mt-14">
+          <Lottie
+            animationData={Amimation}
+            loop={true}
+            autoplay={true}
+            style={{ width: '100%', maxWidth: '500px', height: 'auto' }}
+          />
         </div>
       
     </div>

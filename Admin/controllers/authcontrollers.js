@@ -3,6 +3,7 @@ const User = require('../models/User');
 exports.postLogin = async (req, res) => {
   try {
     const { email, password } = req.body; 
+    console.log(req.body)
     if (!email || !password) {
       return res.status(400).json({ message: "Email or Password is missing", success: false });
     }
@@ -43,6 +44,7 @@ exports.postRegister = async (req, res) => {
       Password,
       Role
     } = req.body;
+    console.log(req.body)
 
     // Validate required fields
     if (
@@ -51,7 +53,6 @@ exports.postRegister = async (req, res) => {
       !Phone ||
       !fatherName ||
       !City ||
-      !Qualification ||
       !Email ||
       !Password ||
       !Role

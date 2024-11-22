@@ -33,11 +33,22 @@ function App() {
   const handlePaymentSubmit = async (e) => {
     e.preventDefault();
 
-    // For demonstration, you can replace this with your actual login or register API call
+    // Fetch additional data from localStorage
+    const additionalData = JSON.parse(localStorage.getItem("registrationData") || "{}");
+
+    // Merge localStorage data with formData
+    const mergedData = { ...formData, ...additionalData };
+
     try {
-      const response = await axios.post('http://localhost:5000/api/message', formData);
+      const response = await axios.post("http://localhost:8082/register", mergedData);
       alert(`Payment Successful via ${paymentMethod.toUpperCase()}!`);
       console.log(response.data);
+      if (response.data.success) {
+        // Navigate or perform additional actions
+        window.location.href = "/dashboard"; // Example navigation
+      } else {
+        alert(response.data.message); // Display error message
+      }
     } catch (error) {
       console.error("Error during API call:", error);
       alert("There was an error processing the payment");

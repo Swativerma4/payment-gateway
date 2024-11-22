@@ -8,14 +8,14 @@ function RegistrationPage() {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    mobileNumber: '',
-    fathersName: '',
-    city: '',
-    qualification: '',
-    pinCode: '',
-    email: '',
-    password: '',
-    role: 'User',
+    Phone: '', // Changed from mobileNumber
+    fatherName: '', // Changed from fathersName
+    City: '', // Changed from city
+    Qualification: '', // Added to match backend
+    PinCode: '', // Changed from pinCode
+    Email: '', // Changed from email
+    Password: '', // Changed from password
+    Role: 'User',
   });
 
   const [cityFromPincode, setCityFromPincode] = useState('');
@@ -38,106 +38,96 @@ function RegistrationPage() {
     }
   };
 
-  useEffect(() => {
-    if (formData.pinCode.length === 6) {
-      fetchCityFromPincode(formData.pinCode);
-    }
-  }, [formData.pinCode]);
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
-    // Mobile number logic to allow only numeric values
-    if (name === 'mobileNumber' && (!/^\d*$/.test(value) || value.length > 10)) {
-      return;
-    }
-
-    // Prevent entering more than 6 digits for pinCode
-    if (name === 'pinCode' && value.length > 6) {
-      return;
-    }
-
-    setFormData({
-      ...formData,
+    setFormData((prevFormData) => ({
+      ...prevFormData,
       [name]: value,
-    });
+    }));
   };
+
+  useEffect(() => {
+    if (formData.PinCode.length === 6) {
+      fetchCityFromPincode(formData.PinCode);
+    }
+  }, [formData.PinCode]);
 
   const isFormValid = () => {
     const {
       firstName,
       lastName,
-      mobileNumber,
-      fathersName,
-      city,
-      email,
-      password,
-      role,
-      pinCode,
+      Phone,
+      fatherName,
+      City,
+      Email,
+      Password,
+      Role,
+      PinCode,
     } = formData;
 
-    const isCityValid = city === cityFromPincode;
+    const isCityValid = City === cityFromPincode;
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
     return (
       firstName &&
       lastName &&
-      mobileNumber.length === 10 &&
-      fathersName &&
-      city &&
-      email &&
-      passwordRegex.test(password) &&
-      role &&
-      pinCode.length === 6 &&
+      Phone.length === 10 &&
+      fatherName &&
+      City &&
+      Email &&
+      passwordRegex.test(Password) &&
+      Role &&
+      PinCode.length === 6 &&
       isCityValid
     );
   };
 
   const handleRegister = (e) => {
     e.preventDefault();
-  
+
     let errors = [];
-  
+
     // Check for missing fields
     if (
       !formData.firstName ||
       !formData.lastName ||
-      !formData.mobileNumber ||
-      !formData.fathersName ||
-      !formData.city ||
-      !formData.pinCode ||
-      !formData.email ||
-      !formData.password
+      !formData.Phone ||
+      !formData.fatherName ||
+      !formData.City ||
+      !formData.PinCode ||
+      !formData.Email ||
+      !formData.Password
     ) {
       errors.push("Please fill in all required fields.");
     } else {
       // Specific field checks
-      if (formData.mobileNumber.length !== 10) {
+      if (formData.Phone.length !== 10) {
         errors.push("Mobile Number must be 10 digits.");
       }
-  
-      if (formData.pinCode.length !== 6) {
+
+      if (formData.PinCode.length !== 6) {
         errors.push("Pincode must be 6 digits.");
       }
-  
+
       // City mismatch with pincode
-      if (formData.city !== cityFromPincode) {
+      if (formData.City !== cityFromPincode) {
         errors.push('The city does not match the pincode.');
       }
-  
+
       // Password validation
       const passwordRegex =
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-      if (!passwordRegex.test(formData.password)) {
+      if (!passwordRegex.test(formData.Password)) {
         errors.push('Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.');
       }
     }
-  
+
     // If errors, set the alert queue
     if (errors.length > 0) {
       setAlertQueue(errors);
     } else {
+      localStorage.setItem("registrationData", JSON.stringify(formData));
       // Proceed with registration and navigate to payment page
       navigate('/Payment');
     }
@@ -188,8 +178,8 @@ function RegistrationPage() {
                 <label className="py-3 block text-sm font-medium text-gray-700">Mobile Number *</label>
                 <input
                   type="text"
-                  name="mobileNumber"
-                  value={formData.mobileNumber}
+                  name="Phone"
+                  value={formData.Phone}
                   onChange={handleInputChange}
                   maxLength={10}
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-950"
@@ -202,8 +192,8 @@ function RegistrationPage() {
                 <label className="py-3 block text-sm font-medium text-gray-700">Father's Name *</label>
                 <input
                   type="text"
-                  name="fathersName"
-                  value={formData.fathersName}
+                  name="fatherName"
+                  value={formData.fatherName}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-950"
                   placeholder="Enter your father's name"
@@ -215,8 +205,8 @@ function RegistrationPage() {
                 <label className="py-3 block text-sm font-medium text-gray-700">City *</label>
                 <input
                   type="text"
-                  name="city"
-                  value={formData.city}
+                  name="City"
+                  value={formData.City}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-950"
                   placeholder="Enter your city"
@@ -228,8 +218,8 @@ function RegistrationPage() {
                 <label className="py-3 block text-sm font-medium text-gray-700">Pincode *</label>
                 <input
                   type="text"
-                  name="pinCode"
-                  value={formData.pinCode}
+                  name="PinCode"
+                  value={formData.PinCode}
                   onChange={handleInputChange}
                   maxLength={6}
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-950"
@@ -242,8 +232,8 @@ function RegistrationPage() {
                 <label className="py-3 block text-sm font-medium text-gray-700">Email *</label>
                 <input
                   type="email"
-                  name="email"
-                  value={formData.email}
+                  name="Email"
+                  value={formData.Email}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-950"
                   placeholder="Enter your email"
@@ -255,20 +245,19 @@ function RegistrationPage() {
                 <label className="py-3 block text-sm font-medium text-gray-700">Password *</label>
                 <input
                   type="password"
-                  name="password"
-                  value={formData.password}
+                  name="Password"
+                  value={formData.Password}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-950"
                   placeholder="Enter your password"
                 />
               </div>
 
-              {/* Submit */}
-              <div className="mt-6">
+              <div className="mt-4 text-center">
                 <button
                   type="submit"
-                  className="w-full bg-blue-900 text-white py-2 rounded-lg hover:bg-blue-700"
-                 
+                  className="w-full bg-blue-950 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-950"
+                  disabled={!isFormValid()}
                 >
                   Register
                 </button>
@@ -282,4 +271,3 @@ function RegistrationPage() {
 }
 
 export default RegistrationPage;
-

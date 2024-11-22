@@ -8,20 +8,13 @@ import Register from './components/Register';
 import Navbar from './components/Navbar';
 import Payment from './components/Payment';
 import Dashboard from './components/Dashboard';
+import ProtectedRoute from './components/Protectedroute';
 
 function App() {
     const [message, setMessage] = useState(''); // State for storing data from the backend
 
     // Fetch data from the backend on component mount
-    useEffect(() => {
-        axios.get('http://localhost:5173') // Replace with your backend URL
-            .then((response) => {
-                setMessage(response.data.message); // Update the state with the backend data
-            })
-            .catch((error) => {
-                console.error('Error fetching data from the backend:', error);
-            });
-    }, []);
+
 
     return (
         <BrowserRouter>
@@ -29,7 +22,7 @@ function App() {
                 <Route path="/" element={<LoginPage />} />
                 <Route path="/Register" element={<><Navbar /><Register/></>} />
                 <Route path="/Payment" element={<Payment />} />
-                <Route path="/Dashboard" element={<Dashboard />} />
+                <Route path="/Dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="*" element={<h1>404 - Page Not Found</h1>} />
             </Routes>
         </BrowserRouter>
