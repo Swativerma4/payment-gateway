@@ -2,6 +2,7 @@ const User = require('../models/User');
 
 exports.postLogin = async (req, res) => {
   try {
+    //Extract Email and Password:
     const { email, password } = req.body; 
     console.log(req.body)
     if (!email || !password) {
@@ -19,9 +20,9 @@ exports.postLogin = async (req, res) => {
       success: true, 
       user: {
         firstName: user.firstName,
-        lastName: user.lastName,
+        
         email: user.Email,
-        role: user.Role,
+        
       }
     });
   } catch (err) {

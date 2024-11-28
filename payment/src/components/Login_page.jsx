@@ -12,7 +12,7 @@ function App() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  // Handle form submission
+  // Handle form submission  stops the browser's default 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -26,8 +26,9 @@ function App() {
 
     try {
       // Send POST request to the backend
+      //Sending the Request
       const response = await axios.post('http://localhost:8082/login', {
-        email: Email, // Correct field name used here
+        email: Email, 
         password: password,
       });
 

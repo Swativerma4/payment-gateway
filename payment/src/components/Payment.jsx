@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Lottie from "lottie-react";
 import animationData from "../assets/Animation3";
+import { useNavigate } from "react-router-dom";
 import { 
   FaUser, 
   FaEnvelope, 
@@ -12,6 +13,8 @@ import {
 } from "react-icons/fa";
 
 function App() {
+  const navigate = useNavigate(); 
+  //React's state management using the useState hook.
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [formData, setFormData] = useState({
     name: "",
@@ -21,17 +24,20 @@ function App() {
     cvv: "",
     upiId: "",
     bank: "",
-    amount: "1000", // Fixed amount
+    amount: "1000", 
   });
+//change event handler function.
 
   const handlePaymentChange = (e) => {
     const { name, value } = e.target;
+    // shallow copy
     setFormData({ ...formData, [name]: value });
   };
 
   const handlePaymentSubmit = (e) => {
     e.preventDefault();
     alert(`Payment Successful via ${paymentMethod.toUpperCase()}!`);
+     navigate("/Dashboard");
   };
 
   return (
